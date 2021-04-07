@@ -1,0 +1,92 @@
+
+For testing Newick tree write 
+first try the classic Iris data
+
+https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data
+
+fetched 2021-04-04 as:
+
+     ./test/data/iris.data
+
+----------------------------------
+julia> using DelimitedFiles
+julia> using Clustering
+julia> include("src/hclust2newick.jl")
+
+
+iris = readdlm("test/data/iris.data", ',')
+
+# cast all but the last column as numbers         
+A = Float64.(iris[:,1:last(size(iris))-1])
+
+# allocate space for the distance matrix
+len = first(size(A))
+dist = zeros(len, len)
+
+# populate the distance matrix (both upper & lower triangles)
+# computing directly to avoid 'Distances.jl' pkg dependency in a test
+
+for i in 1:len-1
+	for j in i+1:len
+		dist[i,j] = dist[j,i] = dist[i,j] = sqrt(sum((A[i,:] .- A[j,:]).^2))
+	end 
+end
+
+# cluster based on the (single linkage) distance
+hc = hclust(dist)
+
+# note well; 
+# Hclust is depreciating labels so they need to be maintained externaly
+iris_labels = String.(iris[:,5])
+
+# express as a newick tree (String)
+tree = hclust2newick(hc, labels = iris_labels)
+
+# write the tree out
+
+open("test/data/iris.tree", "w") do io
+    write_newick(io, hc; labels = iris_labels)
+end
+
+# using python's "Environment for Tree Exploration" (ete3)  to view.
+# ete3 view -t ~/GitHub/Julia/Clustering.jl/test/data/iris.tree
+# looks plausuble. visually, 
+# mostly clustered. setosa most clearly seperated as expected
+# but also a bit large for this test case
+
+######################################################
+# create a 2D dataset with 20 points in four clusters 
+# as  test/data/jdot.tsv  
+#
+
+jdot = readdlm("test/data/jdot.tsv", '\t')
+
+# cast the non-label columns to numbers
+A = Float64.(jdot[:,1:last(size(jdot))-1])
+
+# allocate space for the distance matrix
+len = first(size(A))
+dist = zeros(len, len)
+
+# populate the distance matrix (both upper & lower triangles)
+# computing directly to avoid 'Distances' pkg dependency in a test
+
+for i in 1:len-1
+	for j in i+1:len
+		dist[i,j] = dist[j,i] = dist[i,j] = sqrt(sum((A[i,:] .- A[j,:]).^2))
+	end 
+end
+
+
+# cluster based on the (single linkage) distance
+hc = hclust(dist)
+tree = hclust2newick(hc, labels = jdot[:,3])
+
+open("test/data/jdot.tree", "w") do io
+    write_newick(io, hc; labels = jdot[:,3])
+end
+
+ete3 view -t ~/GitHub/Julia/Clustering.jl/test/data/jdot.tree
+
+that looks perfect, and makes sense as well.
+(as a represntation of the four dots in Julia's logo)
