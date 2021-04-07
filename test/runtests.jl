@@ -19,7 +19,8 @@ tests = ["seeding",
          "hclust",
          "mcl",
          "vmeasure",
-         "mutualinfo"]
+         "mutualinfo",
+         "hclust2newick"]
 
 println("Runing tests:")
 for t in tests
