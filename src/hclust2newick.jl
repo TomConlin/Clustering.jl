@@ -1,5 +1,5 @@
 #=
-    transliterated from  
+    transliterated from
         https://rdrr.io/bioc/ctc/src/R/hc2Newick.R
     2021 spring  TEC
 =#
@@ -43,7 +43,7 @@ function hclust2newick(hclu::Hclust{Float64}; labels::Any = nothing, flat::Bool=
 
         if flat
             return join( # R paste()
-                ["(", left, ":", dist/2.0, ",", right, ":", dist/2.0, ")"], "")  
+                ["(", left, ":", dist/2.0, ",", right, ":", dist/2.0, ")"], "")
         else  # I do not know this use case. so dict of dicts it is for now
             return Dict(:left=>left, :right=>right, :dist=>dist)
         end
